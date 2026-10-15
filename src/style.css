@@ -53,7 +53,7 @@ body[data-theme^=material] .native-dialog-heading{margin:0 -16px 8px}
 .dialog .native-buttons{margin-top:12px}.dialog .native-buttons button{height:36px}
 /* Android TextView line height for Roboto is about 1.172em; paragraphs and dialog text use it. */
 .dialog p,.system-pressure{line-height:1.172}
-.native-about p{margin:0 0 6px}.native-about .about-title{display:flex;align-items:center;gap:4px;font-weight:700;font-size:20px;margin:8px 0 10px}.native-about .about-title img{width:48px;height:48px}.native-about a{color:var(--accent)}.native-about .about-port{font-size:14px;color:var(--muted)}
+.native-about p{margin:0 0 6px}.native-about .about-title{display:flex;align-items:center;gap:4px;font-weight:700;font-size:20px;margin:8px 0 10px}.native-about .about-title img{width:48px;height:48px}.native-about a{color:var(--accent)}.native-about .about-port{font-size:14px;color:var(--muted);border-top:1px solid var(--line);margin-top:12px;padding-top:10px}.native-about .about-port-title{font-weight:700;color:var(--text)}
 /* Target System (viewpager_warp_target.xml): 5:6 header/value columns, 24dp rows, arrows at top end. */
 .target-system{position:relative;padding-top:0}
 .target-rows,.target-cost{display:grid;grid-template-columns:5fr 6fr;line-height:24.333px;min-height:24.333px}
