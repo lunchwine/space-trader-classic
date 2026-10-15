@@ -1,7 +1,12 @@
 # Space Trader Classic
 
-A browser port of the Android game **Space Trader 1.3.5**: a complete, offline, single-file game that follows
-the original's galaxy generation, rules, screens, menus, dialogs and wording.
+A web port of Russell Wolf's (aka Brucelet) Android port of Pieter Spronck's PalmOS game, **Space Trader**. This version was directly adapted from Russell Wolf's v1.3.5, and attempts to be a faithful port. The only features added are import/export of save games and system-based light/dark mode.
+
+The entire game has been ported to HTML/JS/CSS and can be run as an Android native app (via web wrapper), in-browser, or as a Progressive Web App (PWA). To play in browser or install as a PWA, visit https://spacetrader.lunchwine.com.
+
+Nearly all coding was done by LLMs and I make no apologies or guarantees regarding the resulting code. All I wanted to do was bring back a classic that had brought me many hours of joy, dating back to the PalmOS version in the early 00s.
+
+There is no support available for this project. If it works, enjoy. 
 
 ## Play
 
