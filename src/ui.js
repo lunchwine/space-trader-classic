@@ -462,7 +462,7 @@
    s=E.newGame();s.commanderName=D.text[other===1?'name_commander':'name_commander2'];hasSaved=false;tab='title';mapFocus=s.current;tracked=null;
    box(D.text.dialog_switchtonew_title,D.text.dialog_switchtonew_message,'help_switchtonew',[[D.text.generic_ok,()=>{prepareCommander();}]]);
  }
- function exportSave(){if(tab==='title')return;const blob=new Blob([E.serialize(s)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='space-trader-save.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+ function exportSave(){if(tab==='title')return;const blob=new Blob([E.serialize(s)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`space-trader-${String(s.commanderName||'').replace(/[\\/:*?"<>|\x00-\x1f]+/g,'_').trim()||'save'}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
  function runMenu(drop,id){
    menu=null;
    if(drop==='command'){action(()=>goCommand(id));return;}
