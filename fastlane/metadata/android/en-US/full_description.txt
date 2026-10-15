@@ -1,0 +1,17 @@
+Space Trader Classic is a faithful reimplementation of the classic space trading game Space Trader, version 1.3.5, written in HTML, CSS and JavaScript.
+
+You start as a small-time commander with a battered ship and a little cash. Buy goods where they are cheap, fly to another solar system and sell them where they fetch a higher price. Use your profits to buy a better ship, weapons, shields and gadgets, hire mercenaries, and take out or repay loans. Along the way you will meet pirates, police and other traders. Fight them, flee, bribe, surrender or simply trade. Special quests and rare events are scattered across the galaxy. Your goal is to make enough money to retire in comfort, ideally on a moon of your own.
+
+The aim of this app is to match the original game's screens, rules, wording and flow, not to change them. Only two things have been added:
+- Export and import of saved games, so you can move a game between devices.
+- A light or dark theme that follows your system setting.
+
+Features:
+- Works fully offline. The game runs inside the app and needs no internet connection.
+- No permissions, no ads and no tracking.
+- Progress is saved automatically, and two games can be kept at the same time.
+- Also playable in a web browser or as an installable web app at https://spacetrader.lunchwine.com
+
+Credits: the original Palm OS game was created by Pieter Spronck. The Android version and the artwork are by Russell Wolf (Brucelet), copyright 2014 to 2016. This port is licensed under the GPL-3.0-or-later.
+
+Source code: https://github.com/lunchwine/space-trader-classic

@@ -113,4 +113,4 @@ function tools(page) {
   return t;
 }
 
-module.exports = {launch, root, html, E, assert, chromium};
+module.exports = {launch, tools, root, html, E, assert, chromium};

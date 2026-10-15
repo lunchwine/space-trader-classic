@@ -1,0 +1,1 @@
+First release: Space Trader 1.3.5 reimplemented in HTML/JavaScript, fully offline, with save export/import and system light/dark theme.

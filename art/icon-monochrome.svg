@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="108" height="108">
+  <!-- Single-colour shape for themed icons: ring behind, planet disc, ring in front outside the disc. -->
+  <g transform="rotate(-20 54 54)" fill="none" stroke="#000" stroke-width="4">
+    <path d="M24 54A30 9 0 0 1 84 54"/>
+    <path d="M24 54A30 9 0 0 0 84 54"/>
+  </g>
+  <circle cx="54" cy="54" r="17" fill="#000"/>
+</svg>

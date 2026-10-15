@@ -1,4 +1,4 @@
-package io.github.carmenity.spacetraderport;
+package io.github.lunchwine.spacetraderclassic;
 
 import android.app.Activity;
 import android.content.Intent;

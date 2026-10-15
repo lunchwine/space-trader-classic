@@ -13,4 +13,5 @@
 - **Deliberate deviation: Back button.** New games start with "Prev. screen with back button" (`recallScreens`) turned on, so Back steps
   through earlier screens instead of leaving the app (the original defaults it off). Existing saves keep their own setting.
 - **Android wrapper** lives in `android/` (offline WebView, no permissions, no dependencies) and bundles the built `index.html`. Build with
-  `. android/dev-env.sh && gradle -p android assembleDebug` after `python3 scripts/build.py`. Package id is a placeholder.
+  `./gradlew assembleRelease` in `android/` (Gradle runs `scripts/build.py` itself). Package id is `io.github.lunchwine.spacetraderclassic` and is
+  permanent: never change it (F-Droid treats a new id as a new app).
