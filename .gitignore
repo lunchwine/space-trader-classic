@@ -28,3 +28,9 @@ tests/out/*
 # PWA deploy output and wrangler state
 /pwa/dist/
 .wrangler/
+
+# Release signing material must never be committed
+*.jks
+*.keystore
+*.p12
+keystore.properties

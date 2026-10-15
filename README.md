@@ -52,20 +52,39 @@ embeds the WebP copy when it is smaller than the PNG.
 
 ### Android
 
-Needs OpenJDK 17, Android SDK platform 35, build-tools 35.0.0 and Python 3 (set `JAVA_HOME` and `ANDROID_HOME`):
+Release toolchain (the same one F-Droid's recipe uses; keep them in sync):
+
+| Component | Version |
+| --- | --- |
+| JDK | OpenJDK 17 |
+| Gradle | 8.9 (via `android/gradlew`) |
+| Android Gradle Plugin | 8.7.3 |
+| Android SDK | platform 35, build-tools 35.0.0 |
+| Python | 3 (`scripts/build.py` bundles `index.html`; standard library only) |
 
 ```
 cd android && ./gradlew assembleRelease
 ```
 
-Gradle runs `scripts/build.py` itself. The unsigned APK is `android/app/build/outputs/apk/release/app-release-unsigned.apk`.
+Gradle runs `scripts/build.py` itself. The release build is minified with R8 (`proguard-android-optimize.txt` plus
+`android/app/proguard-rules.pro`, which keeps the `@JavascriptInterface` save-export bridge) and comes out **unsigned** at
+`android/app/build/outputs/apk/release/app-release-unsigned.apk`; that is also what F-Droid builds.
 `./gradlew assembleDebug` makes a debug-signed APK that can be sideloaded. `android/dev-env.sh` is an optional local helper that sets the
 environment.
 
 ### Releasing
 
-Bump `version` in package.json and `versionName`/`versionCode` in `android/app/build.gradle` together (`build.py` enforces it;
-versionCode = major*10000 + minor*100 + patch). Add `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`, then tag `vX.Y.Z`.
+1. Bump `version` in package.json (and package-lock.json) and `versionName`/`versionCode` in `android/app/build.gradle` together (`build.py` enforces it;
+   versionCode = major*10000 + minor*100 + patch). Run `python3 scripts/build.py`, add
+   `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`, commit, and tag `vX.Y.Z`. Never move an existing tag.
+2. From a clean checkout of that commit, run `./gradlew clean assembleRelease` (twice, if you want to compare hashes).
+3. Sign with the developer key: `android/sign-release.sh`. The key lives outside the repository (default
+   `~/.android-keys/space-trader-classic.jks`; override with `STC_KEYSTORE`) and the script prompts for its password without echoing it.
+   The key can be created once with the `keytool` command in the script's header. Never commit a keystore or password.
+4. Upload `space-trader-classic-<version>.apk` to the GitHub Release for the tag. F-Droid's recipe points at it with
+   `Binaries:` and `AllowedAPKSigningKeys:` (the signing certificate's SHA-256), so F-Droid can verify its own build against it and publish with this signature.
+
+Reproducibility has been checked only between local builds; the real test is that F-Droid's rebuild matches the published APK.
 
 ## Test
 
