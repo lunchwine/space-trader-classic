@@ -6,7 +6,7 @@ The entire game has been ported to HTML/JS/CSS and can be run as an Android nati
 
 Nearly all coding was done by LLMs and I make no apologies or guarantees regarding the resulting code. All I wanted to do was bring back a classic that had brought me many hours of joy, dating back to the PalmOS version in the early 00s.
 
-There is no support available for this project. If it works, enjoy. 
+This project is actively maintained: builds are kept working and significant bugs are fixed. Issues are welcome, but there is no guaranteed response or personal support.
 
 ## Play
 
@@ -31,6 +31,9 @@ browser; Export Save and Import Save move a game between devices. Two games can 
 | `src/data.js`, `src/data.json`, `src/presentation-data.js` | Game constants, names and strings. |
 | `src/ui.js`, `src/style.css`, `src/page.html` | The player interface and page template. |
 | `assets/` | Original artwork (PNG masters, WebP copies) and Roboto fonts. |
+| `android/` | Android WebView wrapper (Gradle project, package `io.github.lunchwine.spacetraderclassic`). |
+| `pwa/` | Web app manifest, service worker and icons for the PWA. |
+| `fastlane/` | F-Droid store metadata (descriptions, changelogs, screenshots). |
 | `scripts/` | `build.py` (bundle) and `to_webp.cjs` (image conversion). |
 | `tests/` | Engine integration tests and browser tests; `tests/fixtures/` holds sample saves. |
 
@@ -44,6 +47,25 @@ python3 scripts/build.py
 
 This rewrites `index.html`. If you change a PNG in `assets/`, run `node scripts/to_webp.cjs` first; the build
 embeds the WebP copy when it is smaller than the PNG.
+
+`node scripts/render_icons.cjs` regenerates the launcher, PWA and fastlane icon PNGs from the SVG masters in `art/`.
+
+### Android
+
+Needs OpenJDK 17, Android SDK platform 35, build-tools 35.0.0 and Python 3 (set `JAVA_HOME` and `ANDROID_HOME`):
+
+```
+cd android && ./gradlew assembleRelease
+```
+
+Gradle runs `scripts/build.py` itself. The unsigned APK is `android/app/build/outputs/apk/release/app-release-unsigned.apk`.
+`./gradlew assembleDebug` makes a debug-signed APK that can be sideloaded. `android/dev-env.sh` is an optional local helper that sets the
+environment.
+
+### Releasing
+
+Bump `version` in package.json and `versionName`/`versionCode` in `android/app/build.gradle` together (`build.py` enforces it;
+versionCode = major*10000 + minor*100 + patch). Add `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`, then tag `vX.Y.Z`.
 
 ## Test
 
@@ -68,5 +90,7 @@ Saves use `localStorage` keys `space-trader-port-experiment-v1` (game 1) and `sp
 
 Original Palm OS game by **Pieter Spronck**. Android version and artwork by **Russell Wolf**, copyright
 2014–2016 (https://github.com/inferno986return/Brucelet-Space-Trader-archive, version 1.3.5).
+The game artwork in `assets/` comes from that GPL-3.0-or-later Android version (pictures based on originals © 2000 by
+Alexander Lawrence). The launcher icon in `art/` is new to this port.
 This port is licensed **GPL-3.0-or-later**; see [LICENSE](LICENSE). Roboto fonts are under the Apache License 2.0;
 see `assets/fonts/LICENSE.txt` and `assets/fonts/NOTICE.txt`.
