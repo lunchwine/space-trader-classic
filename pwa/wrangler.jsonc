@@ -1,0 +1,6 @@
+// Assets-only Worker: static files from ./dist, no script. Build dist first: npm run build:pwa
+{
+  "name": "space-trader-classic",
+  "compatibility_date": "2026-10-01",
+  "assets": { "directory": "./dist" }
+}

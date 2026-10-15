@@ -1,0 +1,30 @@
+const E=require('../src/engine'),assert=require('node:assert/strict'),fs=require('node:fs');let checks=0,raids=0,payments=0,journeys=0;
+const check=(a,b)=>{assert.deepEqual(a,b);checks++;},reload=s=>{const out=E.deserialize(E.serialize(s));check(out,s);return out;};
+const practice=kind=>E.deserialize(fs.readFileSync('tests/fixtures/Space_Trader_Pirate_'+kind+'_Test_Save.json','utf8'));
+// Original 1.3.5: surrendering to a pirate has no confirmation; the raid happens at once.
+function surrender(s){const before=E.copy(s),direct=E.copy(s);E.combat(s,'surrender');E.combat(direct,'surrender');check(s,direct);check(s.pending.title,s.pending.raid.cargo?'Looting':'Pirates Find No Cargo');check(s.pending.dialogs[0].title,s.pending.title);check(s.encounter,null);check(s.trip.raided,true);check(s.policeScore,before.policeScore);check(s.reputation,before.reputation);check(s.days,before.days);check(s.ship.hull,before.ship.hull);check(s.ship.fuel,before.ship.fuel);check(s.pending.kind,'result');check(s.pending.loot,undefined);check(s.pending.raid.cashPaid+s.pending.raid.addedDebt,s.pending.raid.payment);check(s.pending.raid.cargoLost,Object.values(s.pending.raid.taken).reduce((a,b)=>a+b,0));s=reload(s);assert.throws(()=>E.respondEncounter(s,true));checks++;assert.throws(()=>E.combat(s,'surrender'));checks++;return s;}
+function finish(s){let guard=0;while(s.trip){assert.ok(guard++<500);if(s.pending?.kind==='decision')E.respondEncounter(s,true);else if(s.pending?.kind==='scoop')E.respondScoop(s,false);else if(s.encounter){assert.notEqual(s.encounter.kind||'PIRATE','PIRATE');checks++;const a=s.encounter.kind==='POLICE'&&s.encounter.state==='INSPECTION'?'submit':['IGNORE','FLEE','SURRENDER','BUY','SELL'].includes(s.encounter.state)?'continue':'flee';E.combat(s,a);}else E.acknowledge(s);check(s.ended,false);s=reload(s);}check(s.pending.kind,'arrival');E.acknowledge(s);journeys++;return s;}
+for(let n=0;n<40;n++){
+ let s=practice('Raid');s.rng=new E.JavaRandom(n).toJSON();s.difficulty=n%5;s.policeScore=n%2?-71:10;s=surrender(s);check(E.filled(s.ship),9);check(s.pending.raid.cargoLost,3);check(s.credits,5000);check(s.debt,0);raids++;
+ // Beginner journeys isolate post-raid selection and persistence without deaths.
+ s.difficulty=0;s.policeScore=0;s=finish(s);const old=s.current,target=s.systems.find(t=>t.id!==old&&E.distance(t,s.systems[old])<=15);E.warpCore(s,s.systems[old],target);check(s.trip.raided,false);
+ s=practice('Payment');s.credits=n%3===0?0:n%3===1?100:1000;s.debt=n%2?10000:0;s.policeScore=-71;const cash=s.credits,debt=s.debt,q=E.pirateRaidQuote(s),rng=s.rng;s=surrender(s);check(s.credits,cash-q.cashPaid);check(s.debt,debt+q.addedDebt);check(s.rng,rng);check(E.filled(s.ship),0);payments++;
+}
+// All cargo taken, no available pirate space, and extra bays are source branches.
+for(const [pirateBays,playerCargo] of [[15,12],[0,12],[1,12]]){let s=practice('Raid');s.encounter.opponent.cargo.WATER=15-pirateBays;const rng=s.rng,basis=E.copy(s.costBasis);s=surrender(s);check(s.pending.raid.cargoLost,Math.min(pirateBays,playerCargo));check(E.filled(s.ship),playerCargo-Math.min(pirateBays,playerCargo));if(pirateBays>=playerCargo)check(Object.values(s.costBasis).reduce((a,b)=>a+b,0),0);if(!pirateBays)check(s.costBasis,basis);if(pirateBays===0||pirateBays>=playerCargo)check(s.rng,rng);}
+let s=practice('Raid');s.encounter.opponent.gadgets=['EXTRABAYS'];s= surrender(s);check(s.pending.raid.cargoLost,8);
+// Antidote is not ordinary cargo; pirate space ignores its reservation.
+s=practice('Raid');s.quests.japori.status=1;const q=E.copy(s.quests.japori);s=surrender(s);check(s.quests.japori,q);check(E.cargoCapacity(s),20);check(s.pending.raid.cargoLost,3);
+s=practice('Payment');s.quests.japori.status=1;s=surrender(s);check(s.quests.japori.status,1);check(s.debt,400);check(E.cargoCapacity(s),5);
+// Blackmail minimum, upper cap and negative net worth. Discounts/reserves do not apply.
+for(const credits of [0,100,10000000]){s=practice('Payment');s.credits=credits;s.reserveMoney=true;s.mercenaryCost=200;s.debt=credits===0?10000000:0;const expected=credits===10000000?25000:500;check(E.pirateRaidQuote(s).payment,expected);s=surrender(s);check(s.pending.raid.payment,expected);}
+// Cost basis is reduced one stolen bay at a time, not in one combined rounding.
+s=practice('Raid');s.ship.cargo.WATER=3;s.ship.cargo.FURS=s.ship.cargo.FOOD=0;s.costBasis.WATER=10;s.encounter.opponent.cargo.WATER=13;s=surrender(s);check(s.ship.cargo.WATER,1);check(s.costBasis.WATER,3);
+// Ordinary pirate surrender guards, legacy missing kind and original police refusal.
+for(const [kind,state,type] of [['TRADER','ATTACK','GNAT'],['PIRATE','FLEE','GNAT'],['PIRATE','IGNORE','GNAT'],['PIRATE','SURRENDER','GNAT'],['PIRATE','ATTACK','MANTIS']]){s=practice('Raid');s.encounter.kind=kind;s.encounter.state=state;s.encounter.opponent=E.makeShip(type);const before=E.serialize(s);assert.throws(()=>E.combat(s,'surrender'));check(E.serialize(s),before);}
+s=practice('Raid');delete s.encounter.kind;s=surrender(s);check(s.pending.raid.cargoLost,3);
+s=practice('Raid');s.encounter.kind='POLICE';s.policeScore=-70;E.combat(s,'surrender');check(s.pending.kind,'notice');check(s.pending.title,'To The Death!');E.dismissNotice(s);check(s.pending,null);check(s.encounter.state,'ATTACK');
+// Saved reviews/results reject damaged terms and do not replay a raid.
+s=practice('Raid');E.combat(s,'surrender');for(const change of [x=>x.pending.raidQuote={},x=>x.trip.raided='yes',x=>x.pending.raid.cargoLost++,x=>x.pending.raid.taken.WATER++,x=>x.pending.raid.addedDebt=1,x=>x.trip.raided=false,x=>x.pending.loot='ORE']){const bad=E.copy(s);change(bad);assert.throws(()=>E.deserialize(E.serialize(bad)));checks++;}
+for(const name of ['Plunder','Salvage','Bank','Insurance','Crew','Shipyard']){const old=E.deserialize(fs.readFileSync('tests/fixtures/Space_Trader_'+name+'_Test_Save.json','utf8'));check(reload(old),old);}
+const result={checks,raids,payments,journeys,failures:0};fs.writeFileSync('tests/out/raid-integration-summary.json',JSON.stringify(result,null,2)+'\n');console.log(result);

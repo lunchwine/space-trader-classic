@@ -1,0 +1,30 @@
+node_modules/
+tests/out/*
+!tests/out/.gitkeep
+
+# Dotfiles that appear in the project folder (not part of the project)
+/.bash_profile
+/.bashrc
+/.gitconfig
+/.gitmodules
+/.idea
+/.mcp.json
+/.profile
+/.ripgreprc
+/.vscode
+/.zprofile
+/.zshrc
+/.claude/
+
+# Android build output and local tooling
+/android/.gradle/
+/android/build/
+/android/app/build/
+/android/local.properties
+/.toolchain/
+/android/.claude/
+/android/.mcp.json
+
+# PWA deploy output and wrangler state
+/pwa/dist/
+.wrangler/

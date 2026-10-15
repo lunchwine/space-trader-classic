@@ -1,0 +1,27 @@
+const E=require('../src/engine'),assert=require('node:assert/strict'),fs=require('node:fs');let checks=0,trades=0,purchases=0;
+const check=(a,b)=>{assert.deepEqual(a,b);checks++;};const reload=s=>{const x=E.deserialize(E.serialize(s));check(x,s);return x;};
+function fixture(type='GNAT'){const s=E.newGame(2000,0);s.systems[s.current].tech=7;s.credits=1000000;s.ship=E.makeShip(type);s.ship.weapons=type==='FLEA'||type==='BEETLE'?[]:['PULSE'];return s;}
+function purchase(s,r){E.openPurchase(s,r);s=reload(s);const before=E.copy(s),quote=s.pending.quote;E.respondPurchase(s,true);check(s.pending.step,'complete');check(s.rng,before.rng);check(s.days,before.days);s=reload(s);const after=E.copy(s);E.respondPurchase(s,true);check(s.ship,after.ship);check(s.credits,after.credits);assert.throws(()=>E.respondPurchase(s,true));checks++;return {s,before,quote};}
+for(const old of E.data.ships.slice(0,10))for(const target of E.data.ships.slice(0,10))if(old.id!==target.id){
+ let s=fixture(old.id);s.ship.cargo.WATER=Math.min(3,old.cargoBays-10);s.costBasis.WATER=s.ship.cargo.WATER*33;s.ship.hull=Math.max(1,old.hullStrength-10);s.ship.fuel=3;s.autoFuel=s.autoRepair=true;s.quests.japori.status=1;
+ const {s:after,before,quote}=purchase(s,{type:'ship',id:target.id});check(after.ship.type,target.id);check(after.ship.hull,target.hullStrength);check(after.ship.fuel,target.fuelTanks);check(after.ship.weapons,[]);check(after.ship.shields,[]);check(after.ship.gadgets,[]);check(E.filled(after.ship),0);check(Object.values(after.costBasis).reduce((a,b)=>a+b,0),0);check(after.credits,before.credits-quote.price);check(after.ship.skills,before.ship.skills);check(after.quests,before.quests);check(E.cargoCapacity(after),target.cargoBays-10);check(after.autoFuel,true);trades++;
+}
+for(const [category,ids] of Object.entries(E.yardRules.buyable))for(const id of ids){let s=fixture('WASP');s.ship.weapons=[];const original=E.serialize(s);E.openPurchase(s,{type:'buy',category,id});s=reload(s);E.respondPurchase(s,false);check(E.serialize(s),original);
+ const x=purchase(s,{type:'buy',category,id});s=x.s;check(s.ship[category],[id]);check(s.credits,x.before.credits-x.quote.price);if(category==='shields')check(s.ship.shieldStrength,[0]);const y=purchase(s,{type:'sell',category,index:0});check(y.s.ship[category],[]);check(y.s.credits,s.credits+E.yardRules.sellPrice(E.yardRules.tables[category].find(i=>i.id===id)));purchases++;
+}
+function blocked(s,r,pattern){const before=E.serialize(s);assert.throws(()=>E.openPurchase(s,r),pattern);check(E.serialize(s),before);}
+let s=fixture();s.credits=0;blocked(s,{type:'ship',id:'FIREFLY'},/credits/);blocked(s,{type:'buy',category:'gadgets',id:'EXTRABAYS'},/credits/);
+s=fixture();s.debt=1;blocked(s,{type:'ship',id:'FIREFLY'},/debt/);blocked(s,{type:'buy',category:'gadgets',id:'EXTRABAYS'},/debt/);
+s=fixture('WASP');s.credits=0;s.debt=100;let x=purchase(s,{type:'ship',id:'FLEA'});check(x.s.debt,100);assert.ok(x.s.credits>0);checks++;
+s=fixture();s.systems[s.current].tech=0;blocked(s,{type:'ship',id:'FIREFLY'},/technology/);blocked(s,{type:'buy',category:'gadgets',id:'EXTRABAYS'},/technology/);
+s=fixture();blocked(s,{type:'buy',category:'weapons',id:'BEAM'},/slot/);blocked(s,{type:'ship',id:'MONSTER'},/shipyard/);blocked(s,{type:'buy',category:'shields',id:'LIGHTNING'},/technology/);
+s=fixture();s.ship.gadgets=['NAVIGATINGSYSTEM'];blocked(s,{type:'buy',category:'gadgets',id:'NAVIGATINGSYSTEM'},/second/);
+s=fixture('BUMBLEBEE');s.ship.gadgets=['EXTRABAYS','EXTRABAYS'];check(E.cargoCapacity(s),35);s.ship.cargo.WATER=31;blocked(s,{type:'sell',category:'gadgets',index:0},/cargo/);s.ship.cargo.WATER=30;x=purchase(s,{type:'sell',category:'gadgets',index:0});check(E.cargoCapacity(x.s),30);check(E.filled(x.s.ship),30);
+s=fixture();s.ship.gadgets=['EXTRABAYS'];s.quests.japori.status=1;s.ship.cargo.WATER=6;check(E.cargoCapacity(s),10);blocked(s,{type:'sell',category:'gadgets',index:0},/cargo/);s.ship.cargo.WATER=5;x=purchase(s,{type:'sell',category:'gadgets',index:0});check(E.cargoCapacity(x.s),5);
+s=fixture('WASP');s.ship.shields=['ENERGY','REFLECTIVE'];s.ship.shieldStrength=[20,90];x=purchase(s,{type:'sell',category:'shields',index:0});check(x.s.ship.shields,['REFLECTIVE']);check(x.s.ship.shieldStrength,[90]);
+s=fixture('WASP');s.ship.gadgets=['NAVIGATINGSYSTEM','TARGETINGSYSTEM','AUTOREPAIRSYSTEM'];check(E.effectiveSkill(s.ship,'pilot',0),9);check(E.effectiveSkill(s.ship,'fighter',0),9);check(E.effectiveSkill(s.ship,'engineer',0),9);
+s=fixture('FIREFLY');s.ship.shields=['ENERGY'];s.ship.shieldStrength=[0];const target=s.systems.find(t=>t.id!==s.current&&E.distance(t,s.systems[s.current])<=17);E.beginTravel(s,target.id);check(s.ship.shieldStrength,[100]);blocked(s,{type:'buy',category:'gadgets',id:'EXTRABAYS'},/journey/);
+s=fixture();s.ship.gadgets=['EXTRABAYS'];s.ship.cargo.WATER=19;check(E.deserialize(E.serialize(s)),s);
+E.openPurchase(s,{type:'sell',category:'weapons',index:0});const bad=E.copy(s);bad.pending.quote.price++;assert.throws(()=>E.deserialize(E.serialize(bad)),/quote/);checks++;assert.throws(()=>E.beginTravel(s,target.id),/journey/);checks++;
+s=fixture();s.ship.shields=['LIGHTNING'];s.ship.shieldStrength=[0];E.openPurchase(s,{type:'ship',id:'FIREFLY'});check(s.pending.quote.transferOptions.map(x=>x.id),['LIGHTNING']);E.respondPurchase(s,false);
+const result={checks,shipTrades:trades,equipmentTypes:purchases,failures:0};fs.writeFileSync(__dirname+'/out/yard-integration-summary.json',JSON.stringify(result,null,2)+'\n');console.log(result);

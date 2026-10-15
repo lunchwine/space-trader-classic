@@ -1,0 +1,14 @@
+{
+  "name": "space-trader-classic",
+  "version": "0.9.0",
+  "private": true,
+  "license": "GPL-3.0-or-later",
+  "scripts": {
+    "build": "python3 scripts/build.py",
+    "build:pwa": "python3 scripts/build_pwa.py",
+    "test": "node tests/run-all.cjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.64.0"
+  }
+}
