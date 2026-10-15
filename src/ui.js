@@ -502,7 +502,10 @@
  let helpReturn=null;
  function dockScreen(){return tab==='title'?titleScreen():tab==='info'?systemInfo():tab==='status'?commanderStatus():tab==='buy'||tab==='sell'?market(tab):tab==='chart'?chart():tab==='ship'?ship():tab==='cargo'?specialCargo():tab==='shipInfo'?shipInfo():tab==='yard'?shipyard():tab==='ships'?shipList():tab==='equipment'?equipment():tab==='crew'?crewRoster():tab==='bank'?bank():tab==='quests'?quests():`<section class="panel"><h2>Journal</h2><ul class="log">${s.log.map(l=>`<li><small>DAY ${l.day}</small>${esc(l.text)}</li>`).join('')}</ul></section>`;}
  function screenName(){return overlay|| (quantity?'quantity':s.ended&&tab!=='title'?'ended':null)|| (s.pending?s.pending.kind:s.encounter?'encounter':s.ended&&tab!=='title'?'ended':selected!==null?'departure':tab);}
+ // Re-rendering the same dialog (e.g. ticking an option) keeps its scroll position instead of jumping back to the top.
+ function dialogScroll(){const host=$('screen').querySelector('.modal-host');if(!host)return null;return {key:(lastScreen||'')+'|'+(overlay==='help'?helpTopic:'')+'|'+(host.querySelector('h2')?.textContent||''),tops:[...host.querySelectorAll('.dialog,.options-scroll')].map(e=>e.scrollTop)};}
  function render(){
+   const scrollBefore=dialogScroll();
    if(combatRunning&&!canContinueCombat(combatRunning))stopContinuous();
    trackScreens();
    document.body.dataset.theme=effectiveTheme();stats();$('message').innerHTML=message?`<div class="notice ${messageError?'error':''}" role="${messageError?'alert':'status'}">${esc(message)}</div>`:'';
@@ -522,6 +525,7 @@
    $('journey-status').textContent=s.trip?`In transit to ${s.systems[s.trip.target].name}`:`Docked at ${s.systems[s.current].name}`;
    const focusScreen=['quest','arrest','purchase','personnel','banking','recovery','scoop','plunder','disposal','passenger','special','singularity','wildDeparture','rareDecision','retirement','quantity','scores','options','about','fuelBudget','repairBudget','newCommander','news','newsQuote','find','help','error','routes','loanAmount','repayAmount','shipImage','warpCosts','box','shortcuts'].includes(screen)?screen+':'+(s.pending?.step||''):screen;
    renderMenu();renderFooter();drawShipAnims();
+   const scrollAfter=focusScreen===lastScreen&&dialogScroll();if(scrollBefore&&scrollAfter&&scrollBefore.key===scrollAfter.key)[...$('screen').querySelectorAll('.modal-host .dialog,.modal-host .options-scroll')].forEach((e,i)=>{if(scrollBefore.tops[i])e.scrollTop=scrollBefore.tops[i];});
    if(focusScreen!==lastScreen){const heading=$('screen').querySelector('h2');heading?.setAttribute('tabindex','-1');heading?.focus({preventScroll:true});if(!modal)window.scrollTo({top:0,behavior:'instant'});lastScreen=focusScreen;}
  }
  document.addEventListener('click',event=>{
