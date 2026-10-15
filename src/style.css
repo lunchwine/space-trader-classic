@@ -206,3 +206,12 @@ body.has-footer[data-theme=classic] .app{padding-bottom:92px}
 #footer-shortcuts button{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 /* Project version label on the opening screen (not part of the original game). */
 .title-screen:has(.title-version){position:relative}.title-version{position:absolute;right:12px;bottom:calc(8px + env(safe-area-inset-bottom));color:#fff;font:14px/1.2 Roboto,Arial,sans-serif;text-shadow:0 0 3px #000,0 0 3px #000;pointer-events:none}
+/* Narrow/zoomed phones (e.g. Firefox font scaling): let New Commander shrink to fit instead of overflowing. */
+html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%}
+.new-commander{max-width:100%;overflow-x:hidden;font-size:clamp(13px,4.4vw,18px)}
+.new-commander .difficulty-picker{grid-template-columns:minmax(0,132px) 32px minmax(0,113px) 32px minmax(0,1fr)}
+.new-commander .skill-picker{grid-template-columns:minmax(0,132px) 32px minmax(0,48px) 32px minmax(0,1fr)}
+.new-commander .points-row{grid-template-columns:minmax(0,164px) minmax(0,48px)}
+.new-commander .difficulty-picker>*,.new-commander .skill-picker>*{min-width:0}
+.new-commander .difficulty-picker>span{white-space:nowrap}
+.new-commander .random-choice{font-size:inherit}
