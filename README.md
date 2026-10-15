@@ -4,7 +4,7 @@ A web port of Russell Wolf's (aka Brucelet) Android port of Pieter Spronck's Pal
 
 The entire game has been ported to HTML/JS/CSS and can be run as an Android native app (via web wrapper), in-browser, or as a Progressive Web App (PWA). To play in browser or install as a PWA, visit https://spacetrader.lunchwine.com.
 
-Nearly all coding was done by LLMs and I make no apologies or guarantees regarding the resulting code. All I wanted to do was bring back a classic that had brought me many hours of joy, dating back to the PalmOS version in the early 00s.
+Full disclosure: the majority of the work was porting the previous Java codebase to HTML/JS, and nearly all of that coding was done by LLMs (with human testing and direction). My goal was to bring back a classic that had brought me many hours of joy, dating back to the PalmOS version in the early 00s, and make it accessible to more people.
 
 This project is actively maintained: builds are kept working and significant bugs are fixed. Issues are welcome, but there is no guaranteed response or personal support.
 
