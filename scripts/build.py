@@ -22,6 +22,8 @@ text=text.replace('/*ASSETS*/','const ASSETS='+json.dumps(assets)+';')
 for weight in [400,500,700]:
     path=root/'assets/fonts'/f'Roboto-{weight}.woff2'
     text=text.replace(f'/*FONT{weight}*/','data:font/woff2;base64,'+base64.b64encode(path.read_bytes()).decode())
+# Launcher icon as the favicon, so browsers do not request /favicon.ico.
+text=text.replace('/*FAVICON*/','data:image/svg+xml;base64,'+base64.b64encode((root/'art/icon.svg').read_bytes()).decode())
 text=text.replace('/*APPVERSION*/',version)
 out=root/'index.html';out.write_text(text)
 print(out, out.stat().st_size,'bytes')
