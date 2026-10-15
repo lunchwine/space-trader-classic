@@ -1981,13 +1981,13 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
  function goCommand(id){menu=null;overlay=null;selected=null;mapHole=null;if(id==='buyeq'||id==='selleq'){tab='equipment';equipmentMode=id==='buyeq'?'buy':'sell';}else if(id==='chart'||id==='warp'){tab='chart';chartMode=id==='chart'?'galaxy':'local';}else tab=id==='personnel'?'crew':id;}
  function menuItems(drop){
    if(drop==='command')return [...commands.map(([id,k])=>({id,text:D.text['command_dropdown_'+id],key:k})),...(EXTRAS.commandExtras?[{id:'ship',text:'Ship'},{id:'quests',text:'Quests'},{id:'log',text:'Journal'}]:[])];
-   if(drop==='game')return [{id:'new',text:D.text.menu_new},{id:'switch',text:D.text.menu_switch},...(docked()?[{id:'retire',text:D.text.menu_retire}]:[]),'-',{id:'options',text:D.text.menu_options,key:'O'},{id:'shortcuts',text:D.text.menu_shortcuts},'-',{id:'scores',text:D.text.menu_scores},{id:'clearscores',text:D.text.menu_clearscores},'-',{id:'export',text:'Export Save'},{id:'import',text:'Import Save'}];
+   if(drop==='game')return [{id:'new',text:D.text.menu_new},{id:'switch',text:D.text.menu_switch},...(docked()?[{id:'retire',text:D.text.menu_retire}]:[]),'-',{id:'options',text:D.text.menu_options,key:'O'},{id:'shortcuts',text:D.text.menu_shortcuts},'-',{id:'scores',text:D.text.menu_scores},{id:'clearscores',text:D.text.menu_clearscores},'-',{id:'export',text:'Export Save',disabled:tab==='title'},{id:'import',text:'Import Save'}];
    return [{id:'current',text:D.text.menu_help_current,key:'H'},{id:'helponmenu',text:D.text.menu_help_helponmenu},'-',...['howtoplay','trading','traveling','shipequipment','skills','firststeps','acknowledgements'].map(id=>({id,text:D.text['menu_help_'+id]})),'-',{id:'about',text:D.text.menu_help_about}];
  }
  function renderMenu(){
    const bar=$('menu-bar');bar.hidden=!menu;if(!menu){bar.innerHTML='';return;}
    const spinner=id=>`<button class="menu-spinner${id==='help'?' menu-help':''}" data-menu-drop="${id}" aria-expanded="${menu.drop===id}" aria-label="${esc(D.text['menu_'+id])}"><span>${esc(D.text['menu_'+id])}</span></button>`;
-   bar.innerHTML=`<button class="menu-close" data-menu-close aria-label="Done"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>${docked()?spinner('command'):''}${spinner('game')}${spinner('help')}${menu.drop?`<div class="menu-dropdown" role="menu">${menuItems(menu.drop).map(item=>item==='-'?'<div class="menu-divider" role="separator"></div>':`<button role="menuitem" data-menu-item="${menu.drop}:${item.id}"><span>${esc(item.text)}</span><kbd>${item.key||''}</kbd></button>`).join('')}</div>`:''}`;
+   bar.innerHTML=`<button class="menu-close" data-menu-close aria-label="Done"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>${docked()?spinner('command'):''}${spinner('game')}${spinner('help')}${menu.drop?`<div class="menu-dropdown" role="menu">${menuItems(menu.drop).map(item=>item==='-'?'<div class="menu-divider" role="separator"></div>':`<button role="menuitem" data-menu-item="${menu.drop}:${item.id}"${item.disabled?' disabled':''}><span>${esc(item.text)}</span><kbd>${item.key||''}</kbd></button>`).join('')}</div>`:''}`;
    const list=bar.querySelector('.menu-dropdown'),anchor=bar.querySelector(`[data-menu-drop="${menu.drop}"]`);
    if(list&&anchor)list.style.left=Math.max(0,Math.min(anchor.offsetLeft,bar.clientWidth-list.offsetWidth))+'px';
  }
@@ -2003,7 +2003,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
    s=E.newGame();s.commanderName=D.text[other===1?'name_commander':'name_commander2'];hasSaved=false;tab='title';mapFocus=s.current;tracked=null;
    box(D.text.dialog_switchtonew_title,D.text.dialog_switchtonew_message,'help_switchtonew',[[D.text.generic_ok,()=>{prepareCommander();}]]);
  }
- function exportSave(){const blob=new Blob([E.serialize(s)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='space-trader-save.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+ function exportSave(){if(tab==='title')return;const blob=new Blob([E.serialize(s)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='space-trader-save.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
  function runMenu(drop,id){
    menu=null;
    if(drop==='command'){action(()=>goCommand(id));return;}
@@ -2066,7 +2066,7 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
    if(focusScreen!==lastScreen){const heading=$('screen').querySelector('h2');heading?.setAttribute('tabindex','-1');heading?.focus({preventScroll:true});if(!modal)window.scrollTo({top:0,behavior:'instant'});lastScreen=focusScreen;}
  }
  document.addEventListener('click',event=>{
-   if(menu){const inBar=event.target.closest('#menu-bar');if(!inBar||!event.target.closest('button')){if(menu.drop)menu.drop=null;else if(!inBar)menu=null;render();return;}const bb=event.target.closest('button');if(bb.hasAttribute('data-menu-close')){menu=null;render();return;}if(bb.dataset.menuDrop){menu.drop=menu.drop===bb.dataset.menuDrop?null:bb.dataset.menuDrop;render();return;}if(bb.dataset.menuItem){const [drop,id]=bb.dataset.menuItem.split(':');runMenu(drop,id);return;}return;}
+   if(menu){const inBar=event.target.closest('#menu-bar');if(!inBar||!event.target.closest('button')){if(menu.drop)menu.drop=null;else if(!inBar)menu=null;render();return;}const bb=event.target.closest('button');if(bb.hasAttribute('data-menu-close')){menu=null;render();return;}if(bb.dataset.menuDrop){menu.drop=menu.drop===bb.dataset.menuDrop?null:bb.dataset.menuDrop;render();return;}if(bb.dataset.menuItem){if(bb.disabled)return;const [drop,id]=bb.dataset.menuItem.split(':');runMenu(drop,id);return;}return;}
    const opener=event.target.closest('[data-menu-open]');if(opener){if(!overlay&&!quantity&&!s.pending){menu={drop:docked()?'command':null};render();}return;}
    const command=event.target.closest('[data-command]');if(command){if(!command.disabled&&docked()&&!overlay&&!quantity&&!s.pending)action(()=>goCommand(command.dataset.command));return;}
    const mode=event.target.closest('[data-equipment-mode]');if(mode){action(()=>{equipmentMode=mode.dataset.equipmentMode;if(mode.closest('#command-menu')){tab='equipment';selected=null;}});return;}
