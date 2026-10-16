@@ -20,8 +20,10 @@ out="${1:-$here/app/build/outputs/space-trader-classic-$version.apk}"
 if [ -z "${STC_KS_PASS:-}" ]; then read -r -s -p "Keystore password: " STC_KS_PASS; echo; fi
 export STC_KS_PASS
 # Assumes the key password equals the keystore password (keytool's default when you press Enter).
+# --alignment-preserved: keep Gradle's zip padding. F-Droid copies this signature onto its own unsigned build,
+# so the signed APK must differ from the unsigned one only by the signature, or verification fails.
 "$apksigner" sign --ks "$ks" --ks-key-alias "$alias_" --ks-pass env:STC_KS_PASS --key-pass env:STC_KS_PASS \
-  --min-sdk-version 24 --out "$out" "$in"
+  --min-sdk-version 24 --alignment-preserved --out "$out" "$in"
 "$apksigner" verify --verbose --print-certs "$out" | grep -E 'Verifies|v[0-9] scheme|SHA-256 digest' | grep -v 'Signer #[0-9]* certificate public key'
 echo "Signed: $out"
 sha256sum "$out"
