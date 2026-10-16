@@ -11,8 +11,8 @@ android {
         applicationId 'io.github.lunchwine.spacetraderclassic'
         minSdk 24
         targetSdk 35
-        versionCode 903
-        versionName '0.9.3'
+        versionCode 904
+        versionName '0.9.4'
     }
 
     // The release is built unsigned (what F-Droid builds); android/sign-release.sh signs it afterwards.

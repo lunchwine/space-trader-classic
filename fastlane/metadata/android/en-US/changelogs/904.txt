@@ -1,0 +1,1 @@
+Version 0.9.4: fixes the keyboard closing as soon as it opened in Find System, and keeps the title screen background steady when the keyboard is shown. No gameplay or save changes.
